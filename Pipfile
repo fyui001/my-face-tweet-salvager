@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 twarc = "*"
+mysql-connector = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
