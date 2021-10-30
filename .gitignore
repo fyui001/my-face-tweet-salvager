@@ -1,4 +1,6 @@
 .env
+output/*
+!output/.gitkeep
 
 # IDE and editor specific files #
 /nbproject
