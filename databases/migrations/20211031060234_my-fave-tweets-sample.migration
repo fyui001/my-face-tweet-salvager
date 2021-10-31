@@ -9,7 +9,7 @@ CREATE TABLE my_fave_tweets_sample (
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
   PRIMARY KEY  (id),
   UNIQUE KEY `tweet_id_unique` (`tweet_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 """
 
 SQL_DOWN = u"""
