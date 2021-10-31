@@ -26,9 +26,9 @@ class GetFaveTweets:
 
         for page in tw_client.search_all(query=query):
             for tweet in ensure_flattened(page):
-                self.result[tweet.get('id')] = 'id'
+                self.result[tweet.get('id')] = tweet.get('created_at')
 
-        self.result = sorted(self.result.items(), key=lambda x:x[0])
+        self.result = sorted(self.result.items(), key=lambda x:x[1])
 
     def import_database(self) -> None:
         self.__get_fave_tweets(self.fave_name)
