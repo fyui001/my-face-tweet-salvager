@@ -11,6 +11,7 @@ class DbConnector:
                 password=os.getenv('DB_PASSWD'),
                 host=os.getenv('DB_HOST'),
                 db=os.getenv('DB_DATABASE'),
+                auth_plugin="mysql_native_password"
             )
             return db
         except Exception as e:
