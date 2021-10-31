@@ -1,6 +1,69 @@
 import argparse
+import logging
+import os
+from src.DbConnector import DbConnector
+from dotenv import load_dotenv
+from twarc.client2 import Twarc2
+from twarc.expansions import ensure_flattened
+
+class GetFaveTweets:
+
+    def __init__(self, fave_name):
+        self.fave_name = fave_name
+        self.tweet_url = 'https://twitter.com{fave_name}/status/{tweet_id}'
+        self.result = {}
+
+    def __get_fave_tweets(self, user_name: str) -> None:
+
+        # twitterクライアントの設定
+        tw_client = Twarc2(
+            consumer_key=os.getenv("CONSUMER_KEY"),
+            consumer_secret=os.getenv("CONSUMER_SECRET")
+        )
+
+        # queryの設定をしてツイートを1件ずつ取得する
+        query = 'from:{user_name}'.format(user_name = user_name)
+
+        for page in tw_client.search_all(query=query):
+            for tweet in ensure_flattened(page):
+                self.result = {
+                    tweet.get('id'): 'id',
+                }
+
+        self.result = sorted(self.result.items(), key=lambda x:x[0])
+
+    def import_database(self) -> None:
+        self.__get_fave_tweets(self.fave_name)
+
+        table = 'my_fave_tweets_sample'
+        columns = [
+            'account_name',
+            'tweet_id',
+            'tweet_url',
+        ]
+        import_data = []
+
+        # データ整形
+        for tweet_id in self.result:
+            import_data += [
+                self.fave_name,
+                tweet_id,
+                self.tweet_url.format(fave_name=self.fave_name, tweet_id=tweet_id)
+            ]
+
+        db_client = DbConnector()
+        db_client.bulk_insert(table, columns, import_data)
 
 def main():
+
+    # dotenvの読み込み
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    dotenv_path = os.path.join(base_path, '.env')
+    load_dotenv(dotenv_path)
+
+    # ログの設定
+    logger = logging.getLogger("get-replies")
+    logging.basicConfig(level=logging.INFO)
 
     # コマンドライン引数の設定と取得
     parser = argparse.ArgumentParser(
@@ -26,7 +89,11 @@ def main():
     args = parser.parse_args()
     userId = args.user_id
     saveFormat = args.save_format
-    print(args)
+
+    getter = GetFaveTweets(userId)
+
+    if saveFormat == 'db':
+        getter.import_database()
 
     print('高田憂希しか好きじゃない')
 
