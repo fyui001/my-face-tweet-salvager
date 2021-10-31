@@ -2,9 +2,9 @@ import mysql.connector as connector
 import os
 
 
-class DbModule:
+class DbConnector:
 
-    def __db_connect(self):
+    def __db_connect(self) -> None:
         try:
             db = connector.connect(
                 user=os.getenv('DB_USER'),
@@ -17,12 +17,12 @@ class DbModule:
             print(e)
             raise
 
-    def __get_value(self, values: list):
+    def __get_value(self, values: list) -> str:
         return '({parameters})'.format(
             parameters=', '.join(str('\'' + str(parameter) + '\'') for parameter in values)
         )
 
-    def insert(self, table: str, values: dict):
+    def insert(self, table: str, values: dict) -> bool:
         cnx = self.__db_connect()
         cur = cnx.cursor()
 
@@ -41,9 +41,9 @@ class DbModule:
             return True
         except:
             cnx.rollback()
-            raise
+            return False
 
-    def bulk_insert(self, table: str, columns: list, values: list):
+    def bulk_insert(self, table: str, columns: list, values: list) -> bool:
         cnx = self.__db_connect()
         cur = cnx.cursor()
         parameters = []
@@ -62,9 +62,9 @@ class DbModule:
             return True
         except:
             cnx.rollback()
-            raise
+            return False
 
-    def select(self, sql: str):
+    def select(self, sql: str) -> list:
         cnx = self.__db_connect()
         cur = cnx.cursor(dictionary=True)
         try:
@@ -72,6 +72,6 @@ class DbModule:
             response = cur.fetchall()
             cur.close()
         except:
-            raise
+            return []
 
         return response
