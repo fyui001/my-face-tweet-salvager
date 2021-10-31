@@ -3,10 +3,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+help = "python main.py --help"
+
 [packages]
 twarc = "*"
 mysql-connector = "*"
 python-dotenv = "*"
+simple-db-migrate = "*"
+mysqlclient = "*"
 
 [dev-packages]
 
