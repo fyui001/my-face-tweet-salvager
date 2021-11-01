@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from src.DbConnector import DbConnector
+from src.CsvGenerator import CsvGenerator
 from dotenv import load_dotenv
 from twarc.client2 import Twarc2
 from twarc.expansions import ensure_flattened
@@ -12,6 +13,7 @@ class GetFaveTweets:
         self.fave_name = fave_name
         self.tweet_url = 'https://twitter.com/{fave_name}/status/{tweet_id}'
         self.result = {}
+        self.import_data = []
 
     def __get_fave_tweets(self, user_name: str) -> None:
 
@@ -30,6 +32,16 @@ class GetFaveTweets:
 
         self.result = sorted(self.result.items(), key=lambda x:x[1])
 
+    def __data_processor(self):
+        self.import_data = []
+        # データ整形
+        for k in self.result:
+            self.import_data.append([
+                self.fave_name,
+                k[0],
+                self.tweet_url.format(fave_name=self.fave_name, tweet_id=k[0])
+            ])
+
     def import_database(self) -> None:
         self.__get_fave_tweets(self.fave_name)
 
@@ -39,16 +51,16 @@ class GetFaveTweets:
             'tweet_id',
             'tweet_url',
         ]
-        import_data = []
-        # データ整形
-        for k in self.result:
-            import_data.append([
-                self.fave_name,
-                k[0],
-                self.tweet_url.format(fave_name=self.fave_name, tweet_id=k[0])
-            ])
+        self.__data_processor()
         db_client = DbConnector()
-        db_client.bulk_insert(table, columns, import_data)
+        db_client.bulk_insert(table, columns, self.import_data)
+
+    def generate_csv(self) -> None:
+        self.__get_fave_tweets(self.fave_name)
+        self.__data_processor()
+
+        csv_generator = CsvGenerator()
+        csv_generator.gen_csv(self.import_data, self.fave_name)
 
 def main():
 
@@ -83,13 +95,15 @@ def main():
     )
 
     args = parser.parse_args()
-    userId = args.user_id
-    saveFormat = args.save_format
+    user_id = args.user_id
+    save_format = args.save_format
 
-    getter = GetFaveTweets(userId)
+    getter = GetFaveTweets(user_id)
 
-    if saveFormat == 'db':
+    if save_format == 'db':
         getter.import_database()
+    elif save_format == 'csv':
+        getter.generate_csv()
 
     logger.info('取得完了しました')
     print('高田憂希しか好きじゃない')
