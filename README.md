@@ -27,7 +27,7 @@ cp .env.example .env
 - 立ち上げたappコンテナにログインする
 
 ```shell
-docker-compose app exec bash
+docker-compose exec app bash
 ```
 
 - ログインしたら、マイグレーション行いデータベースの準備をする。
